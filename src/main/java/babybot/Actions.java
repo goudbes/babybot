@@ -2,6 +2,10 @@ package babybot;
 
 import net.aksingh.owmjapis.OpenWeatherMap;
 import net.aksingh.owmjapis.CurrentWeather;
+import org.json.JSONException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.pircbotx.Configuration;
 import org.pircbotx.User;
 import org.pircbotx.hooks.events.JoinEvent;
@@ -15,9 +19,13 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
@@ -46,6 +54,27 @@ class Actions {
         Calendar cal = Calendar.getInstance();
         return dateFormat.format(cal.getTime());
     }
+
+    /**
+     * Retrieve API keys
+     *
+     * @return json object with API keys
+     */
+    static JSONObject getApiKeys() {
+        JSONObject api_keys = null;
+        JSONParser jsonParser = new JSONParser();
+        try (FileReader reader = new FileReader("api_keys.json")) {
+            api_keys = (JSONObject) jsonParser.parse(reader);
+
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        if (api_keys == null)
+            throw new NullPointerException("Could not fetch API keys.");
+
+        return api_keys;
+    }
+
 
     /**
      * Places in Norway with most precipitation, max and min temperatures
@@ -84,6 +113,26 @@ class Actions {
         }
     }
 
+    /**
+     * Validate input
+     * @param message input message
+     * @return city
+     */
+    private static String validateInput(String[] message) {
+        if (message.length < 2) {
+            return "Wrong parameters";
+        }
+        StringBuilder city = new StringBuilder();
+
+        for (int i = 1; i < message.length; i++) {
+            if (city.toString().equalsIgnoreCase("")) {
+                city.append(message[i]);
+            } else
+                city.append(" ").append(message[i]);
+        }
+        return city.toString();
+    }
+
 
     /**
      * Weather forecast for a specific city
@@ -93,21 +142,10 @@ class Actions {
      * @throws IOException
      */
     static String getWeather(String[] msg) throws IOException {
-        if (msg.length < 2) {
-            return "Wrong parameters";
-        }
+        String city = validateInput(msg);
         final String DEGREE = "\u00b0";
-        StringBuilder city = new StringBuilder();
-
-        for (int i = 1; i < msg.length; i++) {
-            if (city.toString().equalsIgnoreCase("")) {
-                city.append(msg[i]);
-            } else
-                city.append(" ").append(msg[i]);
-        }
-
         OpenWeatherMap owm = new OpenWeatherMap("");
-        owm.setApiKey("7d78597ea1f8d3392016fc45014dc5a9");
+        owm.setApiKey((String) getApiKeys().get("open_weather_map"));
         CurrentWeather cwd = owm.currentWeatherByCityName(city.toString());
         String response = "V\u00EArvarsel for: ";
         DecimalFormat df = new DecimalFormat("#.00");
