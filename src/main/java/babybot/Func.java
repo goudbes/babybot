@@ -4,6 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -16,20 +17,20 @@ import java.util.Comparator;
 class Func {
 
     /**
-     *
      * @param x Wind degree
      * @return Wind direction
      */
     static String getWindDirect(double x) {
-        String directions[] = {"nord", "nordaust", "aust", "s\u00F8raust", "s\u00F8r", "s\u00F8rvest", "vest", "nordvest", "nord"};
-        return directions[(int) Math.round((( x % 360) / 45))];
+        String[] directions = {"nord", "nordaust", "aust", "s\u00F8raust", "s\u00F8r", "s\u00F8rvest", "vest", "nordvest", "nord"};
+        return directions[(int) Math.round(((x % 360) / 45))];
     }
 
     /**
      * Formatting degrees
      * author: Akeshwar Jha
      * source: stackoverflow.com/a/38548560
-     * @param latitude Latitude
+     *
+     * @param latitude  Latitude
      * @param longitude Longitude
      * @return Formatted location in degrees
      */
@@ -61,6 +62,7 @@ class Func {
 
     /**
      * Returns list of locations with max precipitation
+     *
      * @param document XML document
      * @return List of locations with max precipitation
      */
@@ -81,7 +83,7 @@ class Func {
         }
 
         NamedNodeMap childAttributes;
-        for (Node p: places) {
+        for (Node p : places) {
             if (p.hasAttributes()) {
                 childAttributes = p.getAttributes();
                 int climate = Integer.parseInt(childAttributes.getNamedItem("climate").getTextContent());
@@ -106,6 +108,7 @@ class Func {
 
     /**
      * Locations with temperature
+     *
      * @param document XML document
      * @return list of locations
      */
@@ -139,7 +142,7 @@ class Func {
         }
 
         NamedNodeMap childAttributes;
-        for (Node p: places) {
+        for (Node p : places) {
             if (p.hasAttributes()) {
                 childAttributes = p.getAttributes();
                 int climate = Integer.parseInt(childAttributes.getNamedItem("climate").getTextContent());

@@ -1,4 +1,5 @@
 package babybot;
+
 import org.json.JSONException;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
@@ -7,11 +8,14 @@ import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.events.*;
 import org.pircbotx.Configuration.*;
 import org.xml.sax.SAXException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 
 /**
  * File: MyListener
@@ -21,47 +25,42 @@ import java.util.*;
 
 public class MyListener extends ListenerAdapter {
 
-
-    private static Configuration configure() throws IOException {
-        //Configure what we want our bot to do
-        HashMap<String,String> config;
-        config = readConfigFile();
-        Builder builder = new Builder();
-        builder.setName(config.get("Name"));
-        builder.addServer(config.get("Server"));
-        builder.setLogin(config.get("Login"));
-        builder.setRealName(config.get("Realname"));
-        builder.addAutoJoinChannel(config.get("Autojoin"));
-        builder.setAutoSplitMessage(true);
-        builder.setEncoding(StandardCharsets.UTF_8);
-        builder.setVersion(config.get("Version"));
-        builder.addListener(new MyListener());
-        return builder.buildConfiguration();
-    }
-
-    private static HashMap<String,String> readConfigFile() {
-        HashMap<String,String> content = new HashMap<>();
-        File file = new File("config.txt"); //for ex foo.txt
-        try {
-            Scanner in = new Scanner(file);
-            while(in.hasNextLine()) {
-                String[] line = in.nextLine().split("\\s+");
-                content.put(line[0],line[1]);
-            }
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return content;
-    }
-
     public static void main(String[] args) throws Exception {
         Configuration config = configure();
         PircBotX bot = new PircBotX(config);
-
-        //Connect to the server
         bot.startBot();
+    }
 
+    /**
+     * Configure bot
+     *
+     * @return configuration
+     * @throws IOException
+     */
+    private static Configuration configure() throws IOException {
+        JSONObject config = null;
+        JSONParser jsonParser = new JSONParser();
+        try (FileReader reader = new FileReader("config.json")) {
+            config = (JSONObject) jsonParser.parse(reader);
+            System.out.println(config);
+
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        if (config == null)
+            throw new NullPointerException("Could not parse configuration file.");
+
+        Builder builder = new Builder();
+        builder.setName((String) config.get("name"));
+        builder.addServer((String) config.get("server"));
+        builder.setLogin((String) config.get("login"));
+        builder.setRealName((String) config.get("realname"));
+        builder.addAutoJoinChannel((String) config.get("autojoin"));
+        builder.setAutoSplitMessage(true);
+        builder.setEncoding(StandardCharsets.UTF_8);
+        builder.setVersion((String) config.get("version"));
+        builder.addListener(new MyListener());
+        return builder.buildConfiguration();
     }
 
     @Override
@@ -82,6 +81,7 @@ public class MyListener extends ListenerAdapter {
                 break;
             case "?extremes":
                 Actions.getExtremes(event);
+                break;
             default:
                 break;
 

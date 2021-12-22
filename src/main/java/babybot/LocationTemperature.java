@@ -14,6 +14,6 @@ public class LocationTemperature extends ExtremeLocation {
 
     public String toString() {
         return " Stad: " + getName() + " Temperatur: " + getValue() + unit +
-                 " Stasjonstype: " + getStationType();
+                " Stasjonstype: " + getStationType();
     }
 }

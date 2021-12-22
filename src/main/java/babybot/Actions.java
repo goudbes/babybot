@@ -1,4 +1,5 @@
 package babybot;
+
 import net.aksingh.owmjapis.OpenWeatherMap;
 import net.aksingh.owmjapis.CurrentWeather;
 import org.pircbotx.Configuration;
@@ -7,20 +8,23 @@ import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.events.OpEvent;
 import org.pircbotx.output.OutputChannel;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.io.*;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -33,10 +37,12 @@ class Actions {
 
     /**
      * Time and date
+     * Example: ?time
+     *
      * @return time and date
      */
     static String getTime() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss zzzz");
         Calendar cal = Calendar.getInstance();
         return dateFormat.format(cal.getTime());
     }
@@ -69,7 +75,7 @@ class Actions {
             }
 
             event.respond("L\u00E5gaste temperatur:\n");
-            for (int i = temperatures.size()-1; i > temperatures.size()-2; i--) {
+            for (int i = temperatures.size() - 1; i > temperatures.size() - 2; i--) {
                 event.respond(temperatures.get(i).toString());
             }
 
@@ -81,6 +87,7 @@ class Actions {
 
     /**
      * Weather forecast for a specific city
+     *
      * @param msg command ?weather and the name of the city
      * @return weather forecast
      * @throws IOException
@@ -107,18 +114,18 @@ class Actions {
 
         if (cwd.isValid()) {
 
-                if (cwd.hasCityName()) {
-                    response += cwd.getCityName();
-                }
+            if (cwd.hasCityName()) {
+                response += cwd.getCityName();
+            }
 
-                float lon, lat;
-                if (cwd.hasCoordInstance() && cwd.getCoordInstance().hasLatitude() && cwd.getCoordInstance().hasLongitude()) {
-                    lon = cwd.getCoordInstance().getLongitude();
-                    lat = cwd.getCoordInstance().getLatitude();
-                    String formattedLocation = Func.getFormattedLocationInDegree(lat,lon);
+            float lon, lat;
+            if (cwd.hasCoordInstance() && cwd.getCoordInstance().hasLatitude() && cwd.getCoordInstance().hasLongitude()) {
+                lon = cwd.getCoordInstance().getLongitude();
+                lat = cwd.getCoordInstance().getLatitude();
+                String formattedLocation = Func.getFormattedLocationInDegree(lat, lon);
 
-                    response += " Koordinatar: " + formattedLocation;
-                }
+                response += " Koordinatar: " + formattedLocation;
+            }
 
             float temperature, humidity, pressure;
 
@@ -178,24 +185,24 @@ class Actions {
                 }
             }
 
-                if (cwd.hasSysInstance()) {
-                    CurrentWeather.Sys sys = cwd.getSysInstance();
-                    if (sys.hasCountryCode()) {
-                        String countryCode = sys.getCountryCode();
-                        response += " Landskode: " + countryCode;
-                    }
-                    if (sys.hasSunriseTime()) {
-                        Date sunriseTime = sys.getSunriseTime();
-                        response += " Soloppgang: " + sunriseTime;
-                    }
-
-                    if (sys.hasSunsetTime()) {
-                        Date sunsetTime = sys.getSunsetTime();
-                        response += " Solnedgang: " + sunsetTime;
-                    }
+            if (cwd.hasSysInstance()) {
+                CurrentWeather.Sys sys = cwd.getSysInstance();
+                if (sys.hasCountryCode()) {
+                    String countryCode = sys.getCountryCode();
+                    response += " Landskode: " + countryCode;
+                }
+                if (sys.hasSunriseTime()) {
+                    Date sunriseTime = sys.getSunriseTime();
+                    response += " Soloppgang: " + sunriseTime;
                 }
 
-                return response;
+                if (sys.hasSunsetTime()) {
+                    Date sunsetTime = sys.getSunsetTime();
+                    response += " Solnedgang: " + sunsetTime;
+                }
+            }
+
+            return response;
         }
         return "Not found";
     }
@@ -203,6 +210,7 @@ class Actions {
 
     /**
      * The bot gives voices to the users who join the channel
+     *
      * @param event Join event
      */
     static void giveVoice(JoinEvent event) {
@@ -210,7 +218,7 @@ class Actions {
         Configuration.BotFactory botFactory = event.getBot().getConfiguration().getBotFactory();
         if (event.getChannel().isOp(event.getBot().getUserBot()) && event.getUser() != null) {
             if ((!(event.getChannel().hasVoice(event.getUser()))) && (normalUsers.contains(event.getUser()))) {
-                OutputChannel outputChannel = botFactory.createOutputChannel(event.getBot(),event.getChannel());
+                OutputChannel outputChannel = botFactory.createOutputChannel(event.getBot(), event.getChannel());
                 outputChannel.voice(event.getUser());
             }
         }
@@ -218,14 +226,15 @@ class Actions {
 
     /**
      * The bot is voicing the users after he is given an OP
+     *
      * @param event OpEvent on the channel
      */
     static void giveVoiceAfterJoin(OpEvent event) {
         Set<User> normalUsers = event.getChannel().getNormalUsers();
         Configuration.BotFactory botFactory = event.getBot().getConfiguration().getBotFactory();
-        OutputChannel outputChannel = botFactory.createOutputChannel(event.getBot(),event.getChannel());
+        OutputChannel outputChannel = botFactory.createOutputChannel(event.getBot(), event.getChannel());
         if (event.getChannel().isOp(event.getBot().getUserBot())) {
-            for (User u :normalUsers) {
+            for (User u : normalUsers) {
                 outputChannel.voice(u);
             }
         }
