@@ -3,6 +3,7 @@ package babybot;
 import com.github.prominence.openweathermap.api.OpenWeatherMapClient;
 import com.github.prominence.openweathermap.api.enums.Language;
 import com.github.prominence.openweathermap.api.enums.UnitSystem;
+import com.github.prominence.openweathermap.api.exception.NoDataFoundException;
 import com.github.prominence.openweathermap.api.model.Coordinate;
 import com.github.prominence.openweathermap.api.model.air.pollution.AirPollutionDetails;
 import com.github.prominence.openweathermap.api.model.air.pollution.AirPollutionRecord;
@@ -22,21 +23,27 @@ public class Pollution {
     public static String getPollution(String[] message) {
         String city = Helpers.validateInput(message);
         if (city == null) {
-            return Helpers.handleError("Could not validate input for city.", "Could not fetch weather data.");
+            return Helpers.handleError("Could not validate input for city.", "Could not fetch air pollution data.");
         }
         final String errorResponse = "Could not fetch air pollution data for " + city;
 
         String apiKey = Helpers.getApiKey(errorResponse);
         OpenWeatherMapClient openWeatherClient = new OpenWeatherMapClient(apiKey);
 
-        final Weather weather = openWeatherClient
-                .currentWeather()
-                .single()
-                .byCityName(city)
-                .language(Language.NORWEGIAN)
-                .unitSystem(UnitSystem.METRIC)
-                .retrieve()
-                .asJava();
+        Weather weather;
+
+        try {
+            weather = openWeatherClient
+                    .currentWeather()
+                    .single()
+                    .byCityName(city)
+                    .language(Language.NORWEGIAN)
+                    .unitSystem(UnitSystem.METRIC)
+                    .retrieve()
+                    .asJava();
+        } catch (NoDataFoundException e) {
+            return Helpers.handleError("No data was found for city " + city, errorResponse);
+        }
 
         Location location = weather.getLocation();
 

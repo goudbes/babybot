@@ -1,5 +1,6 @@
 package babybot;
 
+import com.github.prominence.openweathermap.api.model.air.pollution.AirPollutionRecord;
 import org.json.JSONException;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
@@ -19,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * File: MyListener
