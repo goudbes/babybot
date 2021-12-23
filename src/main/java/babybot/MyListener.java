@@ -3,10 +3,13 @@ package babybot;
 import org.json.JSONException;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
+import org.pircbotx.exception.IrcException;
 import org.pircbotx.hooks.ListenerAdapter;
+import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.MessageEvent;
-import org.pircbotx.hooks.events.*;
+
 import org.pircbotx.Configuration.*;
+import org.pircbotx.hooks.events.OpEvent;
 import org.xml.sax.SAXException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,10 +28,14 @@ import java.nio.charset.StandardCharsets;
 
 public class MyListener extends ListenerAdapter {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException, IrcException {
         Configuration config = configure();
         PircBotX bot = new PircBotX(config);
-        bot.startBot();
+        try {
+            bot.startBot();
+        } catch (IOException | IrcException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -43,7 +50,6 @@ public class MyListener extends ListenerAdapter {
         try (FileReader reader = new FileReader("config.json")) {
             config = (JSONObject) jsonParser.parse(reader);
             System.out.println(config);
-
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
@@ -72,31 +78,29 @@ public class MyListener extends ListenerAdapter {
 
         switch (msg[0]) {
             case "?time":
-                response = Actions.getTime();
-                event.respond(response);
+                event.respond(Time.getTime());
                 break;
             case "?weather":
-                response = Actions.getWeather(msg);
-                event.respond(response);
+                event.respond(Weather.getWeather(msg));
                 break;
-            case "?extremes":
-                Actions.getExtremes(event);
+            case "?air":
+                event.respond(Pollution.getPollution(msg));
                 break;
             default:
                 break;
-
         }
     }
 
     @Override
     public void onJoin(JoinEvent event) {
-        Actions.giveVoice(event);
+        Voice.giveVoice(event);
     }
 
     @Override
     public void onOp(OpEvent event) {
         if (event.getRecipient() == event.getChannel().getBot().getUserBot()) {
-            Actions.giveVoiceAfterJoin(event);
+            Voice.giveVoiceAfterJoin(event);
         }
     }
+
 }
