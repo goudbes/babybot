@@ -28,19 +28,18 @@ class Weather {
 
         String city = Helpers.validateInput(msg);
         if (city == null) {
-            return Helpers.handleError("Could not validate input for city.", "Could not fetch weather data.");
+            return Helpers.handleError("Could not validate input.", ErrorResponse.WEATHER.toString());
         }
-        final String errorResponse = "Could not fetch weather data for " + city;
         final String DEGREE = "\u00b0";
 
-        String apiKey = Helpers.getApiKey(errorResponse);
+        String apiKey = Helpers.getApiKey(ErrorResponse.WEATHER.toString());
         OpenWeatherMap owm = new OpenWeatherMap(apiKey);
 
         CurrentWeather cwd = null;
         try {
             cwd = owm.currentWeatherByCityName(city);
         } catch (IOException | JSONException e) {
-            return Helpers.handleError("Could not fetch current weather for city" + city, errorResponse);
+            return Helpers.handleError("Could not fetch current weather for city" + city, ErrorResponse.WEATHER.toString());
         }
 
         String response = "V\u00EArvarsel for: ";
@@ -137,7 +136,7 @@ class Weather {
 
             return response;
         }
-        return Helpers.handleError("Current weather data is not valid.", errorResponse);
+        return Helpers.handleError("Current weather data is not valid.", ErrorResponse.WEATHER.toString());
     }
 
 

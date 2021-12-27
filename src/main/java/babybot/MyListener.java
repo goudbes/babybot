@@ -85,6 +85,7 @@ public class MyListener extends ListenerAdapter {
             case "?weather":
                 event.respond(Weather.getWeather(msg));
                 break;
+            case "?luft":
             case "?air":
                 event.respond(Pollution.getPollution(msg));
                 break;

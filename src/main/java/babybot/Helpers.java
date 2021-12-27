@@ -74,9 +74,9 @@ class Helpers {
 
         for (int i = 1; i < message.length; i++) {
             if (city.toString().equalsIgnoreCase("")) {
-                city.append(message[i]);
+                city.append(message[i].substring(0, 1).toUpperCase()).append(message[i].substring(1));
             } else
-                city.append(" ").append(message[i]);
+                city.append(" ").append(message[i].substring(0, 1).toUpperCase()).append(message[i].substring(1));
         }
         return city.toString();
     }
