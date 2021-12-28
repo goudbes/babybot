@@ -1,7 +1,13 @@
 package babybot;
 
+import com.github.prominence.openweathermap.api.OpenWeatherMapClient;
+import com.github.prominence.openweathermap.api.enums.Language;
+import com.github.prominence.openweathermap.api.enums.UnitSystem;
+import com.github.prominence.openweathermap.api.exception.NoDataFoundException;
+import com.github.prominence.openweathermap.api.model.weather.Weather;
 import net.aksingh.owmjapis.OpenWeatherMap;
 import net.aksingh.owmjapis.CurrentWeather;
+
 import org.json.JSONException;
 
 import java.io.*;
@@ -15,17 +21,55 @@ import java.util.Date;
  * Created: 04.06.2017 , 14.05
  */
 
-class Weather {
-
+class WeatherForecast {
 
     /**
-     * Weather forecast for a specific city
-     *
-     * @param msg command ?weather and the name of the city
-     * @return weather forecast
+     * Setting up open weather client based on location
+     * @param message input message
+     * @return response with weather data
      */
-    static String getWeather(String[] msg) {
+    static String getWeather(String[] message) {
+        String location = Helpers.validateInput(message);
+        if (location == null) {
+            return Helpers.handleError("Could not validate input.", ErrorResponse.WEATHER.toString());
+        }
 
+        String apiKey = Helpers.getApiKey(ErrorResponse.WEATHER.toString());
+
+        OpenWeatherMapClient openWeatherClient = new OpenWeatherMapClient(apiKey);
+        Weather weather;
+
+        try {
+            weather = openWeatherClient
+                    .currentWeather()
+                    .single()
+                    .byCityName(location)
+                    .language(Language.NORWEGIAN)
+                    .unitSystem(UnitSystem.METRIC)
+                    .retrieve()
+                    .asJava();
+        } catch (NoDataFoundException e) {
+            return Helpers.handleError("No data was found for location " + location, ErrorResponse.POLLUTION.toString());
+        }
+
+        switch (message[0]) {
+            case "?ver":
+                return getWeatherNewNorwegian(message);
+            case "?weather":
+                return weather.toString();
+            default:
+                return Helpers.handleError("Wrong input format.", ErrorResponse.WEATHER.toString());
+        }
+    }
+
+    /**
+     * Weather forecast for a specific city in New Norwegian (Nynorsk)
+     *
+     * @param msg input message
+     * @return weather forecast in New Norwegian (Nynorsk)
+     */
+    static String getWeatherNewNorwegian(String[] msg) {
+        //TODO: Rewrite this using OpenWeatherMapClient
         String city = Helpers.validateInput(msg);
         if (city == null) {
             return Helpers.handleError("Could not validate input.", ErrorResponse.WEATHER.toString());
@@ -35,7 +79,7 @@ class Weather {
         String apiKey = Helpers.getApiKey(ErrorResponse.WEATHER.toString());
         OpenWeatherMap owm = new OpenWeatherMap(apiKey);
 
-        CurrentWeather cwd = null;
+        CurrentWeather cwd;
         try {
             cwd = owm.currentWeatherByCityName(city);
         } catch (IOException | JSONException e) {
@@ -110,7 +154,7 @@ class Weather {
                 CurrentWeather.Wind wind = cwd.getWindInstance();
                 if (wind.hasWindSpeed() && wind.hasWindDegree()) {
                     windSpeed = wind.getWindSpeed();
-                    double w = (double) wind.getWindDegree();
+                    double w = wind.getWindDegree();
                     w = Math.round(w * 100) / 100.0;
                     windDirection = Helpers.getWindDirect(w);
                     response += " Vind: " + windSpeed + " m/s fr\u00E5 " + windDirection;

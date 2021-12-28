@@ -1,6 +1,5 @@
 package babybot;
 
-import com.github.prominence.openweathermap.api.model.air.pollution.AirPollutionRecord;
 import org.json.JSONException;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
@@ -11,16 +10,14 @@ import org.pircbotx.hooks.events.MessageEvent;
 
 import org.pircbotx.Configuration.*;
 import org.pircbotx.hooks.events.OpEvent;
-import org.xml.sax.SAXException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * File: MyListener
@@ -30,7 +27,7 @@ import java.util.List;
 
 public class MyListener extends ListenerAdapter {
 
-    public static void main(String[] args) throws IOException, IrcException {
+    public static void main(String[] args) {
         Configuration config = configure();
         PircBotX bot = new PircBotX(config);
         try {
@@ -46,7 +43,7 @@ public class MyListener extends ListenerAdapter {
      * @return configuration
      * @throws IOException
      */
-    private static Configuration configure() throws IOException {
+    private static Configuration configure() {
         JSONObject config = null;
         JSONParser jsonParser = new JSONParser();
         try (FileReader reader = new FileReader("config.json")) {
@@ -72,18 +69,18 @@ public class MyListener extends ListenerAdapter {
     }
 
     @Override
-    public void onMessage(MessageEvent event) throws IOException, JSONException, ParserConfigurationException, SAXException {
+    public void onMessage(MessageEvent event) throws JSONException {
 
         String message = event.getMessage().toLowerCase();
         String[] msg = message.split("\\s+");
-        String response;
 
         switch (msg[0]) {
             case "?time":
                 event.respond(Time.getTime());
                 break;
+            case "?ver":
             case "?weather":
-                event.respond(Weather.getWeather(msg));
+                event.respond(WeatherForecast.getWeather(msg));
                 break;
             case "?luft":
             case "?air":

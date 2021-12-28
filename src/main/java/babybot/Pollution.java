@@ -27,7 +27,7 @@ public class Pollution {
     public static String getPollution(String[] message) {
         String city = Helpers.validateInput(message);
         if (city == null) {
-            return Helpers.handleError("Could not validate input for city.", ErrorResponse.POLLUTION.toString());
+            return Helpers.handleError("Could not validate input.", ErrorResponse.POLLUTION.toString());
         }
 
         String apiKey = Helpers.getApiKey(ErrorResponse.POLLUTION.toString());
@@ -45,7 +45,7 @@ public class Pollution {
                     .retrieve()
                     .asJava();
         } catch (NoDataFoundException e) {
-            return Helpers.handleError("No data was found for city " + city, ErrorResponse.POLLUTION.toString());
+            return Helpers.handleError("No data was found for location" + city, ErrorResponse.POLLUTION.toString());
         }
 
         Location location = weather.getLocation();
