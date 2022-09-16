@@ -6,7 +6,7 @@
 When given an op, it autovoices the existing channel users and everyone who joins the channel.
 
 ##### Current time
-Command:
+Command::
 
 `?time`
 
